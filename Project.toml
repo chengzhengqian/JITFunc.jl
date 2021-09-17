@@ -1,0 +1,4 @@
+name = "JITFunc"
+uuid = "c93d37db-b35c-416c-a43c-2441531e91a0"
+authors = ["chengzhengqian-game <chengzhengqian@gmail.com>"]
+version = "0.1.0"
