@@ -1,6 +1,6 @@
 module JITFunc
 
-export Func, @call, remove, disassemble, runFunc, saveFunc, loadFunc
+export Func, @call, remove, disassemble, runFunc, saveFunc, loadFunc,reg
     
 mutable struct Func
     ptr:: Ptr{UInt8}
@@ -8,7 +8,6 @@ mutable struct Func
 end
 
 # notice ccall must use a const lib path
-
 const  libpath="$(@__DIR__)/libjitfunc.so"
 const genepath="$(@__DIR__)/gene"
 if(!isdir(genepath))
@@ -40,12 +39,51 @@ function Base.show(io::IO, jitFunc::Func)
 end
 
 # since this is the default pattern, we use
-function runFunc(jitFunc::Func,a::Vector{Float64})
-    ccall((:runFunc,libpath),Cvoid,(Ptr{Cvoid},Ptr{Float64}),jitFunc.ptr,a)
+# we now implement up to six pointer like parameters.
+# As we used the code in linux, one should following the
+"""
+System V AMD64 ABI
+The first six integer or pointer arguments are passed in registers 
+RDI, RSI, RDX, RCX, R8, R9
+"""
+
+function reg(i)
+    ["rdi","rsi","rdx","rcx","r8","r9"][i]
 end
 
-function (func::Func)(a::Vector{Float64})
-    runFunc(func,a)
+
+function runFunc(jitFunc::Func,arg1::Vector{Float64})
+    ccall((:runFunc1,libpath),Cvoid,(Ptr{Cvoid},Ptr{Float64}),jitFunc.ptr,arg1)
+end
+
+function runFunc(jitFunc::Func,arg1::Vector{Float64},arg2::Vector{Float64})
+    ccall((:runFunc2,libpath),Cvoid,(Ptr{Cvoid},Ptr{Float64},Ptr{Float64}),jitFunc.ptr,arg1,arg2)
+end
+
+function runFunc(jitFunc::Func,arg1::Vector{Float64},arg2::Vector{Float64},arg3::Vector{Float64})
+    ccall((:runFunc3,libpath),Cvoid,(Ptr{Cvoid},Ptr{Float64},Ptr{Float64},Ptr{Float64}),jitFunc.ptr,arg1,arg2,arg3)
+end
+
+function runFunc(jitFunc::Func,arg1::Vector{Float64},arg2::Vector{Float64},arg3::Vector{Float64},arg4::Vector{Float64})
+    ccall((:runFunc4,libpath),Cvoid,(Ptr{Cvoid},Ptr{Float64},Ptr{Float64},Ptr{Float64},Ptr{Float64}),jitFunc.ptr,arg1,arg2,arg3,arg4)
+end
+
+function runFunc(jitFunc::Func,arg1::Vector{Float64},arg2::Vector{Float64},arg3::Vector{Float64},arg4::Vector{Float64},arg5::Vector{Float64})
+    ccall((:runFunc5,libpath),Cvoid,(Ptr{Cvoid},Ptr{Float64},Ptr{Float64},Ptr{Float64},Ptr{Float64},Ptr{Float64}),jitFunc.ptr,arg1,arg2,arg3,arg4,arg5)
+end
+
+function runFunc(jitFunc::Func,arg1::Vector{Float64},arg2::Vector{Float64},arg3::Vector{Float64},arg4::Vector{Float64},arg5::Vector{Float64},arg6::Vector{Float64})
+    ccall((:runFunc6,libpath),Cvoid,(Ptr{Cvoid},Ptr{Float64},Ptr{Float64},Ptr{Float64},Ptr{Float64},Ptr{Float64},Ptr{Float64}),jitFunc.ptr,arg1,arg2,arg3,arg4,arg5,arg6)
+end
+
+
+function (func::Func)(x...)
+    if(length(x)>6)
+        error("only support up to 6 parameters")
+    else
+        runFunc(func,x...)
+    end
+    
 end
 
 function remove(jitFunc::Func)

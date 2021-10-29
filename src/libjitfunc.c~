@@ -43,32 +43,10 @@ ptr_byte loadBinary(const char* filename, size_t * ptr_page_size){
   /* printf("result is %d\n",result); */
 }
 
-/*  it is weired that ccall in julia does not work inside a function, i.e, the pointer is determiend at runtime !!*/
-/* we use this to implement the call convension*/
-void runFunc1(void* func, double* arg){
+/*  it is weired that ccall in julia does not work inside a function, i.e, the pointer is determiend at runtime*/
+void runFunc(void* func, double* arg){
   ((void(*)(double*))func)(arg);
 }
-void runFunc2(void* func, double* arg1,double* arg2){
-  ((void(*)(double*,double*))func)(arg1,arg2);
-}
-
-void runFunc3(void* func, double* arg1,double* arg2,double* arg3){
-  ((void(*)(double*,double*,double*))func)(arg1,arg2,arg3);
-}
-
-void runFunc4(void* func, double* arg1,double* arg2,double* arg3,double* arg4){
-  ((void(*)(double*,double*,double*,double*))func)(arg1,arg2,arg3,arg4);
-}
-
-void runFunc5(void* func, double* arg1,double* arg2,double* arg3,double* arg4,double* arg5){
-  ((void(*)(double*,double*,double*,double*,double*))func)(arg1,arg2,arg3,arg4,arg5);
-}
-
-void runFunc6(void* func, double* arg1,double* arg2,double* arg3,double* arg4,double* arg5,double* arg6){
-  ((void(*)(double*,double*,double*,double*,double*,double*))func)(arg1,arg2,arg3,arg4,arg5,arg6);
-}
-
-
 /* int runCode(){ */
 /*   /\* we try a hard coded example *\/ */
 /*   int num_bytes=6; */

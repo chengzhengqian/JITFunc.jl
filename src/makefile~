@@ -1,0 +1,4 @@
+all :  libjitfunc.so
+
+libjitfunc.so: libjitfunc.c
+	gcc -fPIC -shared -o $@ $<

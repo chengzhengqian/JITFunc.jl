@@ -1,4 +1,4 @@
-# in PKg mode, dev JITFunc
+# in PKg mode, ]dev JITFunc
 using Revise
 
 using JITFunc
@@ -82,3 +82,104 @@ disassemble(func)
 
 # now, we use nasm
 
+# Now, we test 1-6 args, reg and runFunc
+asm="
+BITS 64
+    movsd xmm0,  [$(reg(1))]
+    addsd xmm0,xmm0
+    movsd  [$(reg(1))], xmm0
+    ret
+"
+arg1=[1.0]
+func=Func(asm, "test1",mode="nasm")
+func(arg1)
+
+
+asm="
+BITS 64
+    movsd xmm0,  [$(reg(1))]
+    addsd xmm0,xmm0
+    movsd  [$(reg(1))], xmm0
+    movsd  [$(reg(2))], xmm0
+    ret
+"
+arg1=[1.0]
+arg2=[1.0]
+func=Func(asm, "test2",mode="nasm")
+func(arg1,arg2)
+
+asm="
+BITS 64
+    movsd xmm0,  [$(reg(1))]
+    addsd xmm0,xmm0
+    movsd  [$(reg(1))], xmm0
+    movsd  [$(reg(2))], xmm0
+    movsd  [$(reg(3))], xmm0
+    ret
+"
+arg1=[1.0]
+arg2=[1.0]
+arg3=[1.0]
+func=Func(asm, "test2",mode="nasm")
+func(arg1,arg2,arg3)
+# test save
+saveFunc(func,"./gene/test.bin")
+func=loadFunc("./gene/test.bin")
+
+asm="
+BITS 64
+    movsd xmm0,  [$(reg(1))]
+    addsd xmm0,xmm0
+    movsd  [$(reg(1))], xmm0
+    movsd  [$(reg(2))], xmm0
+    movsd  [$(reg(3))], xmm0
+    movsd  [$(reg(4))], xmm0
+    ret
+"
+arg1=[1.0]
+arg2=[1.0]
+arg3=[1.0]
+arg4=[1.0]
+func=Func(asm, "test2",mode="nasm")
+func(arg1,arg2,arg3,arg4)
+
+asm="
+BITS 64
+    movsd xmm0,  [$(reg(1))]
+    addsd xmm0,xmm0
+    movsd  [$(reg(1))], xmm0
+    movsd  [$(reg(2))], xmm0
+    movsd  [$(reg(3))], xmm0
+    movsd  [$(reg(4))], xmm0
+    movsd  [$(reg(5))], xmm0
+    ret
+"
+arg1=[1.0]
+arg2=[1.0]
+arg3=[1.0]
+arg4=[1.0]
+arg5=[1.0]
+func=Func(asm, "test2",mode="nasm")
+func(arg1,arg2,arg3,arg4,arg5)
+
+#  it seems that movsd and mov
+asm="
+BITS 64
+    movsd xmm0,  [$(reg(1))]
+    addsd xmm0,xmm0
+    movsd  [$(reg(1))], xmm0
+    movsd  [$(reg(2))], xmm0
+    movsd  [$(reg(3))], xmm0
+    movsd  [$(reg(4))], xmm0
+    movsd  [$(reg(5))], xmm0
+    movsd  [$(reg(6))], xmm0
+    ret
+"
+arg1=[1.123123123]
+arg2=[1.0]
+arg3=[1.0]
+arg4=[1.0]
+arg5=[1.0]
+arg6=[1.0]
+func=Func(asm, "test2",mode="nasm")
+func(arg1,arg2,arg3,arg4,arg5,arg6)
