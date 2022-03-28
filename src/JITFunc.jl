@@ -8,7 +8,15 @@ mutable struct Func
 end
 
 # notice ccall must use a const lib path
-const  libpath="$(@__DIR__)/libjitfunc.so"
+# we may want ot change this
+# it seems only julia 1.6+ allows the dynmaic path, check on arm
+# check this on x86
+# const  libpath="$(@__DIR__)/libjitfunc.so"
+# now, we should use julia 1.6+ and we could replay libpath ->getlibpath()
+function getlibpath()
+    "$(@__DIR__)/libjitfunc.so"
+end
+
 const genepath="$(@__DIR__)/gene"
 if(!isdir(genepath))
     mkdir(genepath)
@@ -27,7 +35,9 @@ end
 
 function loadFunc(filename)
     size=Vector{Int64}(undef,1)
-    ptr_func=ccall((:loadBinary,libpath),Ptr{UInt8},(Ptr{UInt8},Ptr{Int64}),pointer(filename),size)
+    ptr_func=ccall((:loadBinary,getlibpath()),Ptr{UInt8},(Ptr{UInt8},Ptr{Int64}),pointer(filename),size)
+    # ptr_func=ccall((:loadBinary,libpath),Ptr{UInt8},(Ptr{UInt8},Ptr{Int64}),pointer(filename),size)
+    # for julia 1.5-, one should use a const path, now, we can override getlibpath to swith between different cpu archtech
     result=Func(ptr_func,size)
     f(result)=(@async println("remove $(result)");remove(result))
     finalizer(f,result)
@@ -42,6 +52,7 @@ end
 # we now implement up to six pointer like parameters.
 # As we used the code in linux, one should following the
 """
+We does not handle this generally
 System V AMD64 ABI
 The first six integer or pointer arguments are passed in registers 
 RDI, RSI, RDX, RCX, R8, R9
@@ -53,27 +64,27 @@ end
 
 
 function runFunc(jitFunc::Func,arg1::Vector{Float64})
-    ccall((:runFunc1,libpath),Cvoid,(Ptr{Cvoid},Ptr{Float64}),jitFunc.ptr,arg1)
+    ccall((:runFunc1,getlibpath()),Cvoid,(Ptr{Cvoid},Ptr{Float64}),jitFunc.ptr,arg1)
 end
 
 function runFunc(jitFunc::Func,arg1::Vector{Float64},arg2::Vector{Float64})
-    ccall((:runFunc2,libpath),Cvoid,(Ptr{Cvoid},Ptr{Float64},Ptr{Float64}),jitFunc.ptr,arg1,arg2)
+    ccall((:runFunc2,getlibpath()),Cvoid,(Ptr{Cvoid},Ptr{Float64},Ptr{Float64}),jitFunc.ptr,arg1,arg2)
 end
 
 function runFunc(jitFunc::Func,arg1::Vector{Float64},arg2::Vector{Float64},arg3::Vector{Float64})
-    ccall((:runFunc3,libpath),Cvoid,(Ptr{Cvoid},Ptr{Float64},Ptr{Float64},Ptr{Float64}),jitFunc.ptr,arg1,arg2,arg3)
+    ccall((:runFunc3,getlibpath()),Cvoid,(Ptr{Cvoid},Ptr{Float64},Ptr{Float64},Ptr{Float64}),jitFunc.ptr,arg1,arg2,arg3)
 end
 
 function runFunc(jitFunc::Func,arg1::Vector{Float64},arg2::Vector{Float64},arg3::Vector{Float64},arg4::Vector{Float64})
-    ccall((:runFunc4,libpath),Cvoid,(Ptr{Cvoid},Ptr{Float64},Ptr{Float64},Ptr{Float64},Ptr{Float64}),jitFunc.ptr,arg1,arg2,arg3,arg4)
+    ccall((:runFunc4,getlibpath()),Cvoid,(Ptr{Cvoid},Ptr{Float64},Ptr{Float64},Ptr{Float64},Ptr{Float64}),jitFunc.ptr,arg1,arg2,arg3,arg4)
 end
 
 function runFunc(jitFunc::Func,arg1::Vector{Float64},arg2::Vector{Float64},arg3::Vector{Float64},arg4::Vector{Float64},arg5::Vector{Float64})
-    ccall((:runFunc5,libpath),Cvoid,(Ptr{Cvoid},Ptr{Float64},Ptr{Float64},Ptr{Float64},Ptr{Float64},Ptr{Float64}),jitFunc.ptr,arg1,arg2,arg3,arg4,arg5)
+    ccall((:runFunc5,getlibpath()),Cvoid,(Ptr{Cvoid},Ptr{Float64},Ptr{Float64},Ptr{Float64},Ptr{Float64},Ptr{Float64}),jitFunc.ptr,arg1,arg2,arg3,arg4,arg5)
 end
 
 function runFunc(jitFunc::Func,arg1::Vector{Float64},arg2::Vector{Float64},arg3::Vector{Float64},arg4::Vector{Float64},arg5::Vector{Float64},arg6::Vector{Float64})
-    ccall((:runFunc6,libpath),Cvoid,(Ptr{Cvoid},Ptr{Float64},Ptr{Float64},Ptr{Float64},Ptr{Float64},Ptr{Float64},Ptr{Float64}),jitFunc.ptr,arg1,arg2,arg3,arg4,arg5,arg6)
+    ccall((:runFunc6,getlibpath()),Cvoid,(Ptr{Cvoid},Ptr{Float64},Ptr{Float64},Ptr{Float64},Ptr{Float64},Ptr{Float64},Ptr{Float64}),jitFunc.ptr,arg1,arg2,arg3,arg4,arg5,arg6)
 end
 
 
@@ -87,7 +98,7 @@ function (func::Func)(x...)
 end
 
 function remove(jitFunc::Func)
-    ccall((:free_page,libpath),Cvoid,(Ptr{UInt8},Int64),jitFunc.ptr,jitFunc.size[1])
+    ccall((:free_page,getlibpath()),Cvoid,(Ptr{UInt8},Int64),jitFunc.ptr,jitFunc.size[1])
 end
 
 
